@@ -75,21 +75,31 @@ class DepartmentPositionLevelDf:
     
     def __init__(self, date):
         self.date = date
-        self.df = self.get_df()
+        # self.df = self.get_df()
 
     def get_appoDf(self):
         appoDf = AppointingInfoDf(self.date).get_appointing_info_df()
-        self.appoDf = appoDf.sort_values(by=['id_', 'appoDate_'], ascending=False)
+        self.appoDf = appoDf.sort_values(by=['id_', 'appoDate_'], ascending=True)
         appodic = self.appoDf.to_dict(orient='records')
 
+        lst = []
         old_id, old_level, old_level_date = None, None, None
+        
         for dic in appodic:
+            dic = {item[0]:item[1] for item in dic.items()}
             id_ = dic.get('id_')
             level_ = dic.get('appoPositionLevel_')
             level_date = dic.get('appoDate_')
             if not old_id == id_:
-                old_id, old_level = id_, level_
+                old_id, old_level, old_level_date = id_, level_, level_date
                 dic['appoPositionLevel_date'] = level_date
+            elif not old_level == level_:
+                old_level, old_level_date = level_, level_date
+                dic['appoPositionLevel_date'] = level_date
+            dic['appoPositionLevel_date'] = old_level_date
+            lst.append(dic)
+        return pd.DataFrame(data = lst)
+          
 
 
     def get_df(self):
@@ -155,8 +165,8 @@ class DbAtTime:
         return df
 
 date = datetime(2020,12,31)
-df = DepartmentPositionLevelDf(date).df
-print(df.loc[df.loc[:, 'order']>=1])
+df = DepartmentPositionLevelDf(date).get_appoDf()
+print(df[:25])
 
 
 
