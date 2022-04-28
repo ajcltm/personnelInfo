@@ -1,6 +1,6 @@
 import sys
 from numpy import uint
-parentPath='c:/Users/ajcltm/PycharmProjects/personnelInfo' # parent 경로
+parentPath='c:/Users/user/PycharmProjects/personnelInfo' # parent 경로
 sys.path.append(parentPath) # 경로 추가
 import pandas as pd
 from datetime import datetime
@@ -157,9 +157,10 @@ class ContactState:
     def get_df(self):
         uDf = simpleModelFactory.UniqueInfoDf().df
         tDf = simpleModelFactory.Temp_employeeDf(self.date).df
+        eDf = simpleModelFactory.Expert_employeeDf(self.date).df
         sDf = simpleModelFactory.Sended_employeeDf(self.date).df
-        tsDf = pd.concat([tDf, sDf])
-        df = pd.merge(uDf, tsDf, how='left', on='id_')
+        tesDf = pd.concat([tDf, eDf, sDf])
+        df = pd.merge(uDf, tesDf, how='left', on='id_')
         df = df.loc[:, ['id_', 'contact_state']]
         self.df = df.fillna('정규직')
         df = self.merge_order()

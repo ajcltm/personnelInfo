@@ -1,5 +1,5 @@
 import sys
-parentPath='c:/Users/ajcltm/PycharmProjects/personnelInfo' # parent 경로
+parentPath='c:/Users/user/PycharmProjects/personnelInfo' # parent 경로
 sys.path.append(parentPath) # 경로 추가
 from config import config
 import pandas as pd
@@ -80,6 +80,15 @@ def preprocess_temp_employeeDf(df):
     pr.execute()
     return pr.df_
 
+def preprocess_expert_employeeDf(df):
+    re_cols = ['id_', 'name']
+    string_cols = ['id_']
+    pr = Preprocessing(df)
+    pr.register_commands('rename_cols', re_cols)
+    pr.register_commands('apply_string', string_cols)
+    pr.execute()
+    return pr.df_
+
 def preprocess_sended_employeeDf(df):
     re_cols = ['id_', 'name']
     string_cols = ['id_']
@@ -139,7 +148,7 @@ class Order:
     def order_department(self, agrs):
         date = agrs[0]
         on_ = agrs[1]
-        filePath = config.get_file_path('10. 직제정보.csv')
+        filePath = config.get_file_path('11. 직제정보.csv')
         order_df = pd.read_csv(filePath, encoding='utf-8')
         order_df['start'] = pd.to_datetime(order_df['start'])
         order_df['end'] = pd.to_datetime(order_df['end'])
