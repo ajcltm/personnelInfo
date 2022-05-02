@@ -2,101 +2,82 @@ import sys
 parentPath='c:/Users/user/PycharmProjects/personnelInfo' # parent 경로
 sys.path.append(parentPath) # 경로 추가
 from config import config
+from typing_extensions import Protocol
 import pandas as pd
 
-class Preprocessing:
+class DataProcessing(Protocol):
+    def process(self, df):
+        ...
 
-    def __init__(self, df):
-        self.df_ = df.copy()
-        self.commands = []
 
-    def register_commands(self, fn, *arg):
-        function_option = {
-            'rename_cols': self.rename_cols,
-            'apply_datetime': self.apply_datetime,
-            'apply_string' : self.apply_string
-        }
-        function_ = function_option.get(fn)
-        command = (function_, arg)
-        self.commands.append(command)
+class Rename_cols:
 
-    def execute(self):
-        for item in self.commands:
-            function_ = item[0]
-            var = item[1]
-            function_(var)
+    def __init__(self, cols):
+        self.cols = cols
 
-    def rename_cols(self, cols):
-        self.df_.columns = cols[0]
+    def process(self, df):
+        df.columns = self.cols
+        return df
 
-    def apply_datetime(self, cols):
-        for col in cols[0]:
-            self.df_[col] = pd.to_datetime(self.df_[col], format='%Y-%m-%d')
-        
-    def apply_string(self, cols):
-        for col in cols[0]:
-            self.df_[col] = self.df_[col].apply(lambda x: str(int(x)))
+
+class Apply_datetime:
+
+    def __init__(self, cols):
+        self.cols = cols
     
+    def process(self, df) :
+        for col in self.cols:
+            df[col] = pd.to_datetime(df[col], format='%Y-%m-%d')
+        return df
 
-def preprocess_unique_information_df(df):
-    re_cols = ['id_', 'name', 'birth', 'sex', 'veryFirstPostionLevel', 'recruitmentDate', 'resignationDate']
-    date_cols = ['birth', 'recruitmentDate', 'resignationDate']
-    string_cols = ['id_']
-    pr = Preprocessing(df)
-    pr.register_commands('rename_cols', re_cols)
-    pr.register_commands('apply_datetime', date_cols)
-    pr.register_commands('apply_string', string_cols)
-    pr.execute()
-    return pr.df_
 
-def preprocess_contact_information_df(df):
-    re_cols = ['id_', 'name', 'address', 'mailAddress', 'eMail', 'innerTel', 'mobileTel', 'workFloor']
-    string_cols = ['id_']
-    pr = Preprocessing(df)
-    pr.register_commands('rename_cols', re_cols)
-    pr.register_commands('apply_string', string_cols)
-    pr.execute()
-    return pr.df_
+class Apply_string:
 
-def preprocess_appointing_info_df(df):
-    re_cols = ['name', 'id_', 'appoDate', 'appoName', 'appoDepartment', 'appoPosition', 'appoPositionLevel', 'appoLeader', 'description']
-    date_cols = ['appoDate']
-    string_cols = ['id_']
-    pr = Preprocessing(df)
-    pr.register_commands('rename_cols', re_cols)
-    pr.register_commands('apply_datetime', date_cols)
-    pr.register_commands('apply_string', string_cols)
-    pr.execute()
-    return pr.df_
+    def __init__(self, cols):
+        self.cols = cols
 
-def preprocess_temp_employeeDf(df):
-    re_cols = ['id_', 'name', 'toPermanentDate']
-    date_cols = ['toPermanentDate']
-    string_cols = ['id_']
-    pr = Preprocessing(df)
-    pr.register_commands('rename_cols', re_cols)
-    pr.register_commands('apply_datetime', date_cols)
-    pr.register_commands('apply_string', string_cols)
-    pr.execute()
-    return pr.df_
+    def process(self, df):
+        for col in self.cols:
+            df[col] = df[col].apply(lambda x: str(int(x)))
+        return df
 
-def preprocess_expert_employeeDf(df):
-    re_cols = ['id_', 'name']
-    string_cols = ['id_']
-    pr = Preprocessing(df)
-    pr.register_commands('rename_cols', re_cols)
-    pr.register_commands('apply_string', string_cols)
-    pr.execute()
-    return pr.df_
+class Filter:
+    def __init__(self, cols):
+        self.cols = cols
 
-def preprocess_sended_employeeDf(df):
-    re_cols = ['id_', 'name']
-    string_cols = ['id_']
-    pr = Preprocessing(df)
-    pr.register_commands('rename_cols', re_cols)
-    pr.register_commands('apply_string', string_cols)
-    pr.execute()
-    return pr.df_
+    def process(self, df):
+        return df[self.cols]
+
+class Sort:
+    def __init__(self, cols):
+        self.cols = cols
+
+    def process(self, df):
+        return df.sort_values(by=self.cols)
+
+class Composit:
+
+    def __init__(self, processLst):
+        self.processLst = processLst
+
+    def process(self, df):
+        _df = df
+        for i in self.processLst:
+            _df = i[0](i[1]).process(_df)
+        return _df
+
+class FBuilder:
+    _dict = {
+        'rename_cols' : Rename_cols,
+        'apply_datetime' : Apply_datetime,
+        'apply_string' : Apply_string,
+        'filter' : Filter,
+        'sort' : Sort
+    }
+
+    def get_data_processing(self, processLst):
+        lst = [(self._dict.get(i[0]), i[1]) for i in processLst]
+        return Composit(lst)
 
 def get_history_format(dic):
     appoDate_ = dealNone(dic.get('appoDate').strftime(format='%Y-%m-%d'))
