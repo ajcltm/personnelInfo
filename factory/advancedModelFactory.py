@@ -94,7 +94,10 @@ class AppointingHistoryDf:
         for i in his_dic.items():
             his_dic[i[0]] = '\n'.join(his_dic[i[0]])
 
-        return pd.DataFrame(data = list(his_dic.items()), columns=[['id_', 'his']])
+        # df = pd.DataFrame(data = list(his_dic.items()), columns=[['id_', 'his']])
+        df = pd.DataFrame(his_dic.values(), index=his_dic.keys()).reset_index()
+        df.columns = ['id_', 'his']
+        return df
 
 class DepartmentPositionLevelDf:
     
@@ -174,7 +177,8 @@ class ContactState:
         return df
 
 # date = datetime(2020,12,31)
-# df = DepartmentPositionLevelDf(date).df
+# df = AppointingHistoryDf(date).df
 # # print(df.to_dict(orient='records')[0].get(('his',)))
 # # print(df.loc[df.loc[:, 'order'].isna()])
 # print(df)
+# df.to_csv('history.csv',encoding='cp949')

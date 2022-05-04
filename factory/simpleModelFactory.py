@@ -152,13 +152,13 @@ class Sended_employeeDf:
     def get_lst(self):
         return self.df.loc[:,'id_'].to_list()
 
-date = datetime(2021,12,31)
-# df = Sended_employeeDf(date).df
-# # print(df.to_dict(orient='records')[0].get(('his',)))
-# # print(df.loc[df.loc[:, 'order'].isna()])
-# print(df)
+# date = datetime(2021,12,31)
+# # df = Sended_employeeDf(date).df
+# # # print(df.to_dict(orient='records')[0].get(('his',)))
+# # # print(df.loc[df.loc[:, 'order'].isna()])
+# # print(df)
 
-print(Sended_employeeDf(date).get_df())
+# print(Sended_employeeDf(date).get_df())
 
 
 
